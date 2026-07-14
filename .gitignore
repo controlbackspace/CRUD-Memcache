@@ -34,3 +34,6 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# Catch-all for global environment definitions
+.env
