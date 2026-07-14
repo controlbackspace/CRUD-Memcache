@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import HomeScreen from './src/features/persons/screens/HomeScreen';
 import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -21,12 +22,8 @@ function NavigationRouter() {
 
   // Dashboard routing guard rule loop
   if (user) {
-    return (
-      <View style={styles.centered}>
-        {/* Replace this placeholder layout container with your dashboard layout components */}
-      </View>
-    );
-  }
+  return <HomeScreen />;
+    }
 
   return currentScreen === 'login' ? (
     <LoginScreen onNavigateToRegister={() => setCurrentScreen('register')} />
@@ -35,13 +32,25 @@ function NavigationRouter() {
   );
 }
 
+function AppContent() {
+// ^^^ FIX: Created inner component boundary layer
+  return (
+    <SafeAreaView style={styles.root}>
+{/* // ^^^ EXISTING: Native visual layout container boundary */}
+      <NavigationRouter />
+{/* // ^^^ FIX: Safely mounted deep inside the structural context provider tree */}
+    </SafeAreaView>
+  );
+}
+
 export default function App() {
   return (
     <SafeAreaProvider>
+{/* // ^^^ EXISTING: Mobile device viewport scaling wrapper */}
       <AuthProvider>
-        <SafeAreaView style={styles.root}>
-          <NavigationRouter />
-        </SafeAreaView>
+{/* // ^^^ EXISTING: Root global context state management provider */}
+        <AppContent />
+{/* // ^^^ FIX: Renders child tree after the provider instance exists in memory */}
       </AuthProvider>
     </SafeAreaProvider>
   );
