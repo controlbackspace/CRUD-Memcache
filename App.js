@@ -1,36 +1,53 @@
 import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
+
+import { AuthProvider } from './src/context/AuthContext'; // Match this path to your AuthContext file location
 import LoginScreen from './src/features/auth/screens/LoginScreen';
 import RegisterScreen from './src/features/auth/screens/RegisterScreen';
+import { useAuth } from './src/features/auth/hooks/useAuth';
 
-export default function App() {
-  // 1. Establish the single source of truth for screen routing state
+function NavigationRouter() {
+  const { user, loading } = useAuth();
   const [currentScreen, setCurrentScreen] = useState('login');
 
-  console.log('App.js render cycle. Current active screen state in memory:', currentScreen);
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
 
+  // Dashboard routing guard rule loop
+  if (user) {
+    return (
+      <View style={styles.centered}>
+        {/* Replace this placeholder layout container with your dashboard layout components */}
+      </View>
+    );
+  }
+
+  return currentScreen === 'login' ? (
+    <LoginScreen onNavigateToRegister={() => setCurrentScreen('register')} />
+  ) : (
+    <RegisterScreen onNavigateToLogin={() => setCurrentScreen('login')} />
+  );
+}
+
+export default function App() {
   return (
-    <SafeAreaView style={styles.root}>
-      {currentScreen === 'login' ? (
-        // 2. Pass state mutation downward to the login wrapper
-        <LoginScreen onNavigateToRegister={() => {
-          console.log('Firing state transition: login -> register');
-          setCurrentScreen('register');
-        }} />
-      ) : (
-        // 3. Pass state mutation downward to the register wrapper
-        <RegisterScreen onNavigateToLogin={() => {
-          console.log('Firing state transition: register -> login');
-          setCurrentScreen('login');
-        }} />
-      )}
-    </SafeAreaView>
+    <SafeAreaProvider>
+      <AuthProvider>
+        <SafeAreaView style={styles.root}>
+          <NavigationRouter />
+        </SafeAreaView>
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { 
-    flex: 1, 
-    backgroundColor: '#f4f5f7' 
-  }
+  root: { flex: 1, backgroundColor: '#f4f5f7' },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }
 });

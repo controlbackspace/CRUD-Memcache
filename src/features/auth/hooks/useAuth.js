@@ -1,27 +1,10 @@
-import { useState } from 'react';
-import { authService } from '../services/auth.service';
+import { useContext } from "react";
+import { AuthContext } from "../../../context/AuthContext";
 
 export function useAuth() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [user, setUser] = useState(null);
-
-  const login = async (username, password) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result = await authService.login(username, password);
-      setUser(result.user);
-      // You would store the result.token securely here later
-      console.log('Login Success! User metadata allocated:', result.user);
-      return true;
-    } catch (err) {
-      setError(err.message);
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return { login, isLoading, error, user };
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be executed within an explicit AuthProvider wrapper node tree.");
+  }
+  return context;
 }

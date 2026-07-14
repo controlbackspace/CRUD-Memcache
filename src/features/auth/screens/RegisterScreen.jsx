@@ -1,43 +1,53 @@
 import React from 'react';
-import { StyleSheet, View, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, StyleSheet } from 'react-native';
+import { useAuth } from '../hooks/useAuth';
+// 🎯 Go up one level to auth/, then straight down into components/
 import RegisterForm from '../components/RegisterForm';
 
 export default function RegisterScreen({ onNavigateToLogin }) {
-  const handleRegisterSubmit = (registrationData) => {
-    // This will route to your useAuth custom hook for registration later
-    console.log('Register Screen captured form submission payload:', registrationData);
+  const { register, isLoading, error } = useAuth();
+
+  const handleRegisterSubmit = async ({ username, password }) => {
+    const result = await register(username, password);
+    if (result && result.success) {
+      alert('Registration successful! Redirecting to login...');
+      onNavigateToLogin();
+    }
   };
 
   return (
-    <KeyboardAvoidingView 
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-      style={styles.screenContainer}
-    >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.innerLayout}>
-          
-          {/* ─── PASSING THE PROPERTY DOWN THE HIGHWAY ─── */}
-          <RegisterForm 
-            onRegisterSubmit={handleRegisterSubmit}
-            onNavigateToLogin={onNavigateToLogin} // <-- FORWARDS TRIGGER TO MOLECULE
-            isLoading={false}
-            serverError={null}
-          />
-          
-        </View>
-      </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+    <View style={styles.screenContainer}>
+      <View style={styles.cardWrapper}>
+        <RegisterForm 
+          onRegisterSubmit={handleRegisterSubmit} 
+          onNavigateToLogin={onNavigateToLogin} 
+          isLoading={isLoading} 
+          serverError={error} 
+        />
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screenContainer: {
-    flex: 1,
-    backgroundColor: '#f4f5f7',
+  screenContainer: { 
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    backgroundColor: '#f3f4f6',
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0
   },
-  innerLayout: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 20,
-  },
+  cardWrapper: { 
+    width: '90%', 
+    maxWidth: 400,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 3
+  }
 });
