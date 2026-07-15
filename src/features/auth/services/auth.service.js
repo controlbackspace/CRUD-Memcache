@@ -1,9 +1,7 @@
 const BASE_URL = 'http://localhost:5000/api/auth';
 
 export const authService = {
-  /**
-   * Dispatches user credential configuration payload to backend database
-   */
+  
   register: async (username, password) => {
     try {
       const response = await fetch(`${BASE_URL}/register`, {
@@ -23,9 +21,7 @@ export const authService = {
     }
   },
 
-  /**
-   * Requests session verification token mapping from server authentication endpoints
-   */
+  
   login: async (username, password) => {
     try {
       const response = await fetch(`${BASE_URL}/login`, {

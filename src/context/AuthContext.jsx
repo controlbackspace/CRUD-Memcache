@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 1. Initial Synchronous Boot Audit Loop
+  
   useEffect(() => {
     const storedToken = localStorage.getItem('crud_app_token');
     const storedUser = localStorage.getItem('crud_app_user');
@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
       } catch (e) {
-        // Clear corrupted entries immediately
+        
         localStorage.removeItem('crud_app_token');
         localStorage.removeItem('crud_app_user');
       }
@@ -26,9 +26,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  /**
-   * Dispatches Register API execution request
-   */
+  
   const register = async (username, password) => {
     setError(null);
     try {
@@ -47,9 +45,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  /**
-   * Dispatches Login validation payload and saves local state tokens
-   */
+  
   const login = async (username, password) => {
     setError(null);
     try {
@@ -62,14 +58,14 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Login failed');
 
-      // Hydrate state properties
+      
       setToken(data.token);
       
-      // For basic identification, deduce user details out of payload parameters
+      
       const userPayload = { username }; 
       setUser(userPayload);
 
-      // Write parameters to persistence layers
+      
       localStorage.setItem('crud_app_token', data.token);
       localStorage.setItem('crud_app_user', JSON.stringify(userPayload));
 
@@ -80,9 +76,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  /**
-   * Purges active token structures out of active execution memory
-   */
+ 
   const logout = () => {
     setToken(null);
     setUser(null);

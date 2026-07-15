@@ -36,10 +36,8 @@ app.use((req, res) => {
 
 // 8. SERVER INITIALIZATION LISTENER BOUNDARY
 const server = app.listen(PORT, () => {
-  console.log(`==================================================`);
-  console.log(`🚀 Layered CRUD Application Architecture Online!`);
-  console.log(`📡 Listening on network endpoint: http://localhost:${PORT}`);
-  console.log(`==================================================`);
+  console.log(` Layered CRUD Application Architecture Online!`);
+  console.log(` Listening on network endpoint: http://localhost:${PORT}`);
 });
 
 module.exports = { app, server };

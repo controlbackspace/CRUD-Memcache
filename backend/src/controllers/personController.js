@@ -2,9 +2,7 @@ const calculateAge = require('../utils/ageCalc');
 
 module.exports = (PersonModel) => {
   return {
-    /**
-     * GET /api/persons (Protected)
-     */
+    
     getAll: (req, res) => {
       const currentUserId = req.user.id;
 
@@ -13,7 +11,7 @@ module.exports = (PersonModel) => {
           return res.status(500).json({ error: "Failed to fetch persons" });
         }
 
-        // Dynamically compute the runtime age invariant for every row instance
+        
         const processedRows = rows.map(row => ({
           ...row,
           age: calculateAge(row.dob)
@@ -23,9 +21,7 @@ module.exports = (PersonModel) => {
       });
     },
 
-    /**
-     * GET /api/persons/:id (Protected)
-     */
+
     getById: (req, res) => {
       const currentUserId = req.user.id;
       const targetId = req.params.id;
@@ -38,7 +34,7 @@ module.exports = (PersonModel) => {
           return res.status(404).json({ error: "Person not found" });
         }
 
-        // Hydrate record structure output with real-time age calculation
+        
         const processedPerson = {
           ...row,
           age: calculateAge(row.dob)
@@ -48,14 +44,12 @@ module.exports = (PersonModel) => {
       });
     },
 
-    /**
-     * POST /api/persons (Protected)
-     */
+    
     create: (req, res) => {
       const currentUserId = req.user.id;
       const { firstname, lastname, dob, sex } = req.body;
 
-      // Fail-fast parameters sanity check
+      
       if (!firstname || !lastname || !dob) {
         return res.status(400).json({ error: "Missing required fields: firstname, lastname, dob" });
       }
@@ -84,9 +78,7 @@ module.exports = (PersonModel) => {
       });
     },
 
-    /**
-     * PUT /api/persons/:id (Protected)
-     */
+    
     update: (req, res) => {
       const currentUserId = req.user.id;
       const targetId = req.params.id;
@@ -110,9 +102,7 @@ module.exports = (PersonModel) => {
       });
     },
 
-    /**
-     * DELETE /api/persons/:id (Protected)
-     */
+    
     delete: (req, res) => {
       const currentUserId = req.user.id;
       const targetId = req.params.id;

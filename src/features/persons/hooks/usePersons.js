@@ -1,22 +1,21 @@
-import { useState, useCallback } from 'react'; // EXISTING - Core state tools
+import { useState, useCallback } from 'react';
 import { personsService } from '../services/persons.service'; 
-// ^^^ FIX: Unified explicitly to point to the single target data service engine
-import { useAuth } from '../../auth/hooks/useAuth'; // EXISTING - Read global token context
+import { useAuth } from '../../auth/hooks/useAuth'; 
 
 export function usePersons() {
-  const [persons, setPersons] = useState([]); // EXISTING - Local cached array records
+  const [persons, setPersons] = useState([]); 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  // FIX: Destructure token directly to confirm context layer extraction matches AuthContext fields
+
   const { token } = useAuth(); 
-// ^^^ FIX: Ensures that token property variable matches context provider assignments exactly
+
 
   const fetchPersons = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      // FIX: Defensive guard check to intercept broken context configurations early
+      
       if (!token) {
         throw new Error("Access token required. Please login to get a token.");
       }

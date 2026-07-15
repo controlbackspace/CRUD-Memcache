@@ -32,13 +32,12 @@ function NavigationRouter() {
   );
 }
 
-function AppContent() {
-// ^^^ FIX: Created inner component boundary layer
+  function AppContent() {
+
   return (
     <SafeAreaView style={styles.root}>
-{/* // ^^^ EXISTING: Native visual layout container boundary */}
+
       <NavigationRouter />
-{/* // ^^^ FIX: Safely mounted deep inside the structural context provider tree */}
     </SafeAreaView>
   );
 }
@@ -46,11 +45,8 @@ function AppContent() {
 export default function App() {
   return (
     <SafeAreaProvider>
-{/* // ^^^ EXISTING: Mobile device viewport scaling wrapper */}
       <AuthProvider>
-{/* // ^^^ EXISTING: Root global context state management provider */}
         <AppContent />
-{/* // ^^^ FIX: Renders child tree after the provider instance exists in memory */}
       </AuthProvider>
     </SafeAreaProvider>
   );

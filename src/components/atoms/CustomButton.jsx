@@ -1,10 +1,10 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 
-// 1. Destructure the onPress reference coming from the parent form
+
 export default function CustomButton({ title, onPress }) {
   return (
-    // 2. Map it directly into the native touch configuration layout
+    
     <TouchableOpacity style={styles.button} onPress={onPress}>
       <Text style={styles.text}>{title}</Text>
     </TouchableOpacity>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
-// 🎯 Go up one level to auth/, then straight down into components/
+
 import RegisterForm from '../components/RegisterForm';
 
 export default function RegisterScreen({ onNavigateToLogin }) {

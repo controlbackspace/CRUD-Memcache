@@ -25,4 +25,4 @@ module.exports = (db) => {
       return await bcrypt.compare(plainPassword, hashedPassword);
     }
   };
-}; // <-- THIS IS THE TRUE END OF THE FILE. REMOVE ANY LOGIC BELOW THIS LINE.
+};
