@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import HomeScreen from './src/features/persons/screens/PersonsListScreen';
 import { 
   View, 
   Text, 
@@ -39,7 +40,6 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Structural Header Strip */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Persons Registry</Text>
         <TouchableOpacity style={styles.logoutButton} onPress={logout}>

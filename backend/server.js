@@ -7,8 +7,9 @@ const db = require('./src/config/db');
 const cache = require('./src/config/cache');
 
 // 2. MOLECULES LAYER: Dependency Injection into Data Models
-const UserModel = require('./src/models/User')(db, cache);
-const PersonModel = require('./src/models/Person')(db);
+const UserModel = require('./src/models/User'); // FIX: Remove '(db, cache)' invocation
+// ^^^ FIX: Import UserModel as a static object directly since it loads its own dependencies
+const PersonModel = require('./src/models/Person'); 
 
 // 3. TEMPLATES LAYER: Initializing Route Coordinators
 const authController = require('./src/controllers/authController')(UserModel);
@@ -16,7 +17,7 @@ const personController = require('./src/controllers/personController')(PersonMod
 
 // 4. PAGES LAYER: Initializing Routers
 const authRoutes = require('./src/routes/authRoutes')(authController);
-const personRoutes = require('./src/routes/personRoutes')(personController);
+const personRoutes = require('./src/routes/personRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;

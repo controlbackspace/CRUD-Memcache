@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import HomeScreen from './src/features/persons/screens/HomeScreen';
+import PersonsListScreen from './src/features/persons/screens/PersonsListScreen'; // FIX: Point directly to the fully-featured PersonsListScreen
+// ^^^ FIX: Import the updated screen containing modal forms, layout bounds, and FAB systems
 import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { AuthProvider } from './src/context/AuthContext'; // Match this path to your AuthContext file location
+import { AuthProvider } from './src/context/AuthContext'; // EXISTING - Context initialization
 import LoginScreen from './src/features/auth/screens/LoginScreen';
 import RegisterScreen from './src/features/auth/screens/RegisterScreen';
 import { useAuth } from './src/features/auth/hooks/useAuth';
 
 function NavigationRouter() {
-  const { user, loading } = useAuth();
+  const { user, loading } = useAuth(); // EXISTING - Auth session validation
   const [currentScreen, setCurrentScreen] = useState('login');
 
   if (loading) {
@@ -22,8 +23,9 @@ function NavigationRouter() {
 
   // Dashboard routing guard rule loop
   if (user) {
-  return <HomeScreen />;
-    }
+    return <PersonsListScreen />; // FIX: Render the interactive list screen with modal handlers
+//  ^^^ FIX: Directing the authenticated state to mount the form-capable screen
+  }
 
   return currentScreen === 'login' ? (
     <LoginScreen onNavigateToRegister={() => setCurrentScreen('register')} />
@@ -32,11 +34,9 @@ function NavigationRouter() {
   );
 }
 
-  function AppContent() {
-
+function AppContent() {
   return (
     <SafeAreaView style={styles.root}>
-
       <NavigationRouter />
     </SafeAreaView>
   );
