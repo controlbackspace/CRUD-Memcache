@@ -64,10 +64,20 @@ export function usePersons() {
     setIsLoading(true);
     setError(null);
     try {
+      if (!token) {
+        throw new Error("Session credentials missing. Please log in again.");
+      }
+
+      // FIX: Call the service layer instead of hardcoding localhost
       await personsService.delete(token, id);
-      setPersons((prev) => prev.filter((item) => item.id !== id));
+      // ^^^ FIX: Standardizes API endpoints across environments (web/emulator/physical)
+
+      // FIX: Filter the state immediately to update the UI
+      setPersons((prevPersons) => prevPersons.filter((p) => p.id !== id));
+
       return { success: true };
     } catch (err) {
+      console.error("❌ removePerson failure:", err.message);
       setError(err.message);
       return { success: false, error: err.message };
     } finally {

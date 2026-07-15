@@ -1,3 +1,4 @@
+// C:\Users\jakea\Basic_CRUD_Application\src\screens\PersonsListScreen.jsx
 import React, { useEffect, useState } from 'react';
 import { 
   View, 
@@ -7,7 +8,8 @@ import {
   ActivityIndicator, 
   TouchableOpacity,
   Modal,
-  Alert
+  Alert,
+  Platform
 } from 'react-native';
 import { usePersons } from '../hooks/usePersons'; // EXISTING - Data layer hooks
 import { useAuth } from '../../auth/hooks/useAuth'; // EXISTING - Auth security context
@@ -40,60 +42,93 @@ export default function PersonsListScreen() {
     }
   };
 
+  // FIX: Single, clean declaration of the asynchronous database deletion runner
+  const executeDelete = async (id) => {
+    console.log("⚙ Step 3: executeDelete entered. Running removePerson with ID:", id);
+    const result = await removePerson(id);
+    console.log("⚙ Step 4: removePerson returned result:", result);
+    if (!result.success) {
+      Alert.alert('Delete Failed', result.error || 'An unexpected error occurred.');
+    }
+  };
+  // ^^^ FIX: Unified callback runner to prevent functional scope redeclaration issues
+
+  // FIX: Single, clean declaration of environment-adaptive confirmation handler
   const handleDeleteCheck = (id, name) => {
-    // Check if on web to avoid runtime Alert.alert object errors on some web environments
-    if (Alert.alert) {
+    console.log("⚙ Step 2: handleDeleteCheck entered. ID:", id, "Name:", name);
+    
+    if (id === undefined || id === null) {
+      console.error("❌ ERROR: Cannot delete. The provided ID is undefined or null.");
+      alert("Error: Record has no valid database ID.");
+      return;
+    }
+
+    // FIX: Check Platform.OS instead of relying on the presence of the Alert.alert stub
+    if (Platform.OS === 'web') {
+      console.log("⚙ Step 2b: Running web confirm window...");
+      const confirmDelete = window.confirm(`Are you sure you want to permanently delete the record for ${name}?`);
+      if (confirmDelete) {
+        console.log("⚙ Step 2c: Confirm clicked YES. Proceeding to executeDelete.");
+        setTimeout(() => {
+          executeDelete(id);
+        }, 0);
+      } else {
+        console.log("⚙ Step 2c: Confirm clicked NO. Deletion aborted.");
+      }
+    } else {
+      // Native iOS/Android Environments
+      console.log("⚙ Step 2b: Triggering mobile Native Alert.alert dialog.");
       Alert.alert(
         'Confirm Deletion',
         `Are you sure you want to permanently delete the record for ${name}?`,
         [
           { text: 'Cancel', style: 'cancel' },
-          { text: 'Delete', style: 'destructive', onPress: () => removePerson(id) }
+          { text: 'Delete', style: 'destructive', onPress: () => executeDelete(id) }
         ]
       );
-    } else {
-      const confirmDelete = window.confirm(`Are you sure you want to permanently delete the record for ${name}?`);
-      if (confirmDelete) {
-        removePerson(id);
-      }
     }
   };
 
-  const renderPersonCard = ({ item }) => (
-    <View style={styles.card}>
-      <View style={styles.cardInfo}>
-        <Text style={styles.nameText}>{item.firstname} {item.lastname}</Text>
-        <Text style={styles.detailText}>DOB: {item.dob} • Sex: {item.sex}</Text>
-        <Text style={styles.ageBadge}>Age: {item.age}</Text>
+  const renderPersonCard = ({ item }) => {
+    const recordId = item.id !== undefined ? item.id : item.rowid;
+
+    return (
+      <View style={styles.card}>
+        <View style={styles.cardInfo}>
+          <Text style={styles.nameText}>{item.firstname} {item.lastname}</Text>
+          <Text style={styles.detailText}>DOB: {item.dob} • Sex: {item.sex}</Text>
+          <Text style={styles.ageBadge}>Age: {item.age}</Text>
+        </View>
+        <View style={styles.actionColumn}>
+          <TouchableOpacity 
+            style={[styles.actionButton, styles.editButton]} 
+            onPress={() => {
+              setSelectedPerson(item);
+              setIsModalOpen(true);
+            }}
+          >
+            <Text style={styles.editText}>Edit</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.actionButton, styles.deleteButton]} 
+            onPress={() => {
+              console.log("⚙ Step 1: Delete button clicked! Raw item:", item);
+              handleDeleteCheck(recordId, `${item.firstname} ${item.lastname}`);
+            }}
+          >
+            <Text style={styles.deleteText}>Delete</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      <View style={styles.actionColumn}>
-        <TouchableOpacity 
-          style={[styles.actionButton, styles.editButton]} 
-          onPress={() => {
-            setSelectedPerson(item);
-            setIsModalOpen(true);
-          }}
-        >
-          <Text style={styles.editText}>Edit</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.actionButton, styles.deleteButton]} 
-          onPress={() => handleDeleteCheck(item.id, `${item.firstname} ${item.lastname}`)}
-        >
-          <Text style={styles.deleteText}>Delete</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
-{/* // ^^^ EXISTING: Base layout container root node */}
       {/* Header Bar */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Persons Registry (v2-Updated)</Text>
         <View style={styles.headerActions}>
-{/* // ^^^ EXISTING: Action wrapper grouping layout options next to each other */}
           <TouchableOpacity 
             style={styles.headerAddButton} 
             onPress={() => {
@@ -179,7 +214,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f3f4f6',
     position: 'relative',
     width: '100%',
-    minHeight: '100%' // <--- FIX: Safe percentage heights that the layout compiler executes perfectly on both web browsers and mobile emulators without dynamic dimension API risks
+    minHeight: '100%'
   },
   header: { 
     flexDirection: 'row', 
@@ -270,4 +305,4 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     textAlign: 'center'
   }
-});
+}); 

@@ -1,81 +1,35 @@
-// backend/routes/person.routes.js
+// C:\Users\jakea\Basic_CRUD_Application\backend\src\routes\personRoutes.js
 const express = require('express');
 const router = express.Router();
-const Person = require('../models/Person'); // Matches our dynamic age model
-const authenticateToken = require('../middleware/auth'); // Your JWT validation middleware
+const authenticateToken = require('../middleware/auth'); // EXISTING: Auth gatekeeper
 
-// 1. GET: Fetch all records for the logged-in user
-router.get('/', authenticateToken, async (req, res) => {
-  try {
-    const userId = req.user.id; // Decoded safe ID from JWT security layer
-    const records = await Person.findAllByUserId(userId);
-    res.json(records);
-  } catch (err) {
-    console.error('Error fetching records:', err.message);
-    res.status(500).json({ error: 'Database fetch failure.' });
-  }
-});
-
-// 2. POST: Create a new person record
-router.post('/', authenticateToken, async (req, res) => {
-  const { firstname, lastname, dob, sex } = req.body;
-
-  // Simple input validation check
-  if (!firstname || !lastname || !dob || !sex) {
-    return res.status(400).json({ error: 'Missing required fields: firstname, lastname, dob, sex' });
+module.exports = (personController) => {
+  // Guard Check: Throw explicit developer errors instead of letting Express throw cryptic backtraces
+  if (!personController) {
+    throw new Error("personRoutes factory requires a valid personController instance.");
   }
 
-  try {
-    const userId = req.user.id;
-    const newRecord = await Person.create({ firstname, lastname, dob, sex }, userId);
-    res.status(201).json(newRecord);
-  } catch (err) {
-    console.error('Error saving record:', err.message);
-    res.status(500).json({ error: 'Failed to create database entry.' });
-  }
-});
+  // FIX: Explicit safety guards to locate the exact undefined method causing your 'TypeError' crash
+  const routes = [
+    { path: 'GET /api/persons', handler: personController.getAll },
+    { path: 'GET /api/persons/:id', handler: personController.getById },
+    { path: 'POST /api/persons', handler: personController.create },
+    { path: 'PUT /api/persons/:id', handler: personController.update },
+    { path: 'DELETE /api/persons/:id', handler: personController.deletePerson }
+  ];
 
-// 3. PUT: Update an existing record
-router.put('/:id', authenticateToken, async (req, res) => {
-  const { firstname, lastname, dob, sex } = req.body;
-  const { id } = req.params;
-
-  if (!firstname || !lastname || !dob || !sex) {
-    return res.status(400).json({ error: 'Missing required fields for update.' });
-  }
-
-  try {
-    const userId = req.user.id;
-    const result = await Person.update(id, { firstname, lastname, dob, sex }, userId);
-
-    if (result.changes === 0) {
-      return res.status(404).json({ error: 'Record not found or user unauthorized to modify it.' });
+  routes.forEach(route => {
+    if (!route.handler) {
+      throw new TypeError(`Router initialization failed: Callback handler for "${route.path}" is undefined. Check personController export properties.`);
     }
+  });
+  // ^^^ FIX: Intercepts undefined bindings before they hit node_modules/router/index.js:151
 
-    res.json({ success: true, message: 'Record updated successfully.' });
-  } catch (err) {
-    console.error('Error updating record:', err.message);
-    res.status(500).json({ error: 'Failed to update database entry.' });
-  }
-});
+  router.get('/', authenticateToken, personController.getAll); // EXISTING
+  router.get('/:id', authenticateToken, personController.getById); // EXISTING
+  router.post('/', authenticateToken, personController.create); // EXISTING
+  router.put('/:id', authenticateToken, personController.update); // EXISTING
+  router.delete('/:id', authenticateToken, personController.deletePerson); // FIX: Pointed to clean renamed method
 
-// 4. DELETE: Remove a record safely
-router.delete('/:id', authenticateToken, async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const userId = req.user.id;
-    const result = await Person.delete(id, userId);
-
-    if (result.changes === 0) {
-      return res.status(404).json({ error: 'Record not found or user unauthorized to delete it.' });
-    }
-
-    res.json({ success: true, message: 'Record deleted successfully.' });
-  } catch (err) {
-    console.error('Error deleting record:', err.message);
-    res.status(500).json({ error: 'Failed to delete database entry.' });
-  }
-});
-
-module.exports = router;
+  return router;
+};

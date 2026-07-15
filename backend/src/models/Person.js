@@ -41,7 +41,18 @@ const Person = {
       });
     });
   },
-
+  findById: (id, userId) => {
+    return new Promise((resolve, reject) => {
+      const sql = `SELECT * FROM persons WHERE id = ? AND user_id = ?`;
+      db.get(sql, [id, userId], (err, row) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(row ? { ...row, age: calculateAge(row.dob) } : null);
+        }
+      });
+    });
+  },
   // Read all records belonging to the authenticated user with dynamic runtime age derivation
   findAllByUserId: (userId) => {
     return new Promise((resolve, reject) => {
@@ -83,10 +94,17 @@ const Person = {
   delete: (id, userId) => {
     return new Promise((resolve, reject) => {
       const sql = `DELETE FROM persons WHERE id = ? AND user_id = ?`;
+      
+      // FIX: Use a standard function callback so 'this' binds to the SQLite statement context
       db.run(sql, [id, userId], function(err) {
         if (err) {
+          console.error("❌ SQLite error during delete query execution:", err.message);
           reject(err);
         } else {
+          // Debug logs so we can see what physical action occurred:
+          console.log(`[Database] Attempted DELETE on ID: ${id} by User: ${userId}. Rows affected: ${this.changes}`);
+          
+          // FIX: Explicitly pass back the changes captured from 'this' statement context
           resolve({ changes: this.changes });
         }
       });

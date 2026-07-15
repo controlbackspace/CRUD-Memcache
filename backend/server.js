@@ -1,5 +1,7 @@
+// C:\Users\jakea\Basic_CRUD_Application\backend\server.js
 const express = require('express');
 const cors = require('cors');
+const app = express();
 require('dotenv').config();
 
 // 1. ATOMS LAYER: Infrastructure Connection Clients
@@ -7,8 +9,7 @@ const db = require('./src/config/db');
 const cache = require('./src/config/cache');
 
 // 2. MOLECULES LAYER: Dependency Injection into Data Models
-const UserModel = require('./src/models/User'); // FIX: Remove '(db, cache)' invocation
-// ^^^ FIX: Import UserModel as a static object directly since it loads its own dependencies
+const UserModel = require('./src/models/User'); 
 const PersonModel = require('./src/models/Person'); 
 
 // 3. TEMPLATES LAYER: Initializing Route Coordinators
@@ -17,25 +18,30 @@ const personController = require('./src/controllers/personController')(PersonMod
 
 // 4. PAGES LAYER: Initializing Routers
 const authRoutes = require('./src/routes/authRoutes')(authController);
-const personRoutes = require('./src/routes/personRoutes');
+const personRoutes = require('./src/routes/personRoutes')(personController);
 
-const app = express();
 const PORT = process.env.PORT || 5000;
 
-// 5. GLOBAL MIDDLEWARE LAYER
-app.use(cors());
-app.use(express.json()); // Essential body parser register
+// FIX: Move Global CORS registration to the VERY TOP of the middleware chain
+app.use(cors({
+  origin: '*', // Permits requests from any origin (e.g. your local web port)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // FIX: Handled successfully during browser preflights
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+// ^^^ FIX: Ensures preflight OPTIONS requests return a 200/204 to the browser prior to route execution
 
-// 6. MOUNTING ROUTE ENTRY CHANNELS
-app.use('/api/auth', authRoutes);
-app.use('/api/persons', personRoutes);
+app.use(express.json()); // EXISTING: Must also run before routes to parse JSON bodies
 
-// 7. GLOBAL CATCH-ALL FOR TRAPPED UNTRACKED PATHS
+// 5. MOUNTING ROUTE ENTRY CHANNELS
+app.use('/api/auth', authRoutes); // EXISTING: Mounted safely after global handlers
+app.use('/api/persons', personRoutes); // EXISTING: Mounted safely after global handlers
+
+// 6. GLOBAL CATCH-ALL FOR TRAPPED UNTRACKED PATHS
 app.use((req, res) => {
   res.status(404).json({ error: "Resource endpoint route not found" });
 });
 
-// 8. SERVER INITIALIZATION LISTENER BOUNDARY
+// 7. SERVER INITIALIZATION LISTENER BOUNDARY
 const server = app.listen(PORT, () => {
   console.log(` Layered CRUD Application Architecture Online!`);
   console.log(` Listening on network endpoint: http://localhost:${PORT}`);

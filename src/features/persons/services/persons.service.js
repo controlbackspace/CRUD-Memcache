@@ -40,15 +40,28 @@ export const personsService = {
     return data;
   },
   delete: async (token, id) => {
-    const response = await fetch(`${BASE_URL}/${id}`, {
-      method: "DELETE",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
+    // ^^^ FIX: Declares both parameters so your security token successfully forwards to the server
+    try {
+      const response = await fetch(`${BASE_URL}/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          // FIX: Inject the Bearer token credentials to pass backend auth.js middleware
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      // ^^^ FIX: Standardizes the delete request, passing the validation gates
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete record from database.');
       }
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "Failed to delete person record.");
-    return data;
+
+      return data;
+    } catch (error) {
+      console.error('❌ Service Layer Delete Error:', error.message);
+      throw error; // Let the hook catch and alert this to the UI screen
+    }
   }
 };
